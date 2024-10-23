@@ -26,15 +26,15 @@ public class SecurityConfig {
     public SecurityWebFilterChain jwtSecurityFilterChain(ServerHttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) {
         return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
-                        //cambiar lo de swagger. cerrar acceso o no??
-                     /*   .pathMatchers("/swagger-ui.html", "/v3/api-docs/**").permitAll() // Permite acceso a Swagger
+                        // Rutas de Swagger permitidas sin autenticación,CAMBIAR??
+                        .pathMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
                         .pathMatchers("/api/auth/**").permitAll()
                         .pathMatchers("/api/admin/**").hasRole("ADMIN")
-                        .pathMatchers("/api/users/**").authenticated()*/
-                        .anyExchange().permitAll()
+                        .pathMatchers("/api/users/**").authenticated()
+                        .anyExchange().authenticated()
                 )
-                /*.httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
-                .addFilterAt(jwtAuthenticationFilter, SecurityWebFiltersOrder.AUTHENTICATION)*/
+                .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+                .addFilterAt(jwtAuthenticationFilter, SecurityWebFiltersOrder.AUTHENTICATION)
                 .build();
     }
 
@@ -57,4 +57,3 @@ public class SecurityConfig {
     }
 
 }
-

@@ -21,20 +21,18 @@ public class JwtUtil {
     private long expiration;
 
     private SecretKey getSigningKey() {
-        // Decodificar la clave secreta de Base64 a bytes
+
         byte[] decodedKey = Base64.getDecoder().decode(secret);
         return Keys.hmacShaKeyFor(decodedKey);
     }
 
-    // Genera el token JWT
     public String generateToken(String userId, String username, String role) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("userId", userId); // Añadir el userId a las claims
-        claims.put("role", role); // Añadir el rol a las claims
+        claims.put("userId", userId);
+        claims.put("role", role);
         return createToken(claims, username);
     }
 
-    // Crea el token JWT con las reclamaciones, sujeto y fecha de expiración
     private String createToken(Map<String, Object> claims, String subject) {
         return Jwts.builder()
                 .setClaims(claims)
@@ -45,20 +43,18 @@ public class JwtUtil {
                 .compact();
     }
 
-    // Extrae el nombre de usuario del token
     public String extractUsername(String token) {
         return extractAllClaims(token).getSubject();
     }
 
     public String extractUserId(String token) {
-        return extractAllClaims(token).get("userId", String.class); // Recuperar el userId desde las claims
+        return extractAllClaims(token).get("userId", String.class);
     }
 
     public String extractRole(String token) {
-        return extractAllClaims(token).get("role", String.class); // Recuperar el rol desde las claims
+        return extractAllClaims(token).get("role", String.class);
     }
 
-    // Extrae todas las reclamaciones del token
     private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
@@ -67,13 +63,11 @@ public class JwtUtil {
                 .getBody();
     }
 
-    // Valida si el token es correcto y no ha expirado
     public boolean validateToken(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
-    // Comprueba si el token ha expirado
     private boolean isTokenExpired(String token) {
         return extractAllClaims(token).getExpiration().before(new Date());
     }

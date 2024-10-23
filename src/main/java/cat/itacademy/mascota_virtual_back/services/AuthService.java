@@ -20,20 +20,18 @@ import javax.naming.AuthenticationException;
 public class AuthService {
 
     private final UsuariRepository usuariRepository;
-    private final PasswordEncoder passwordEncoder; // Para codificar contraseñas
-    private final JwtUtil jwtUtil; // Para generar tokens JWT
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
     private final UsuariMapper usuariMapper;
 
-    // Método para registrar un usuario nuevo
     public Mono<AuthResponse> registerUser(AuthRequest authRequest) {
         Usuari usuari = new Usuari();
         usuari.setNomUsuari(authRequest.getNomUsuari());
-        usuari.setContrasenya(passwordEncoder.encode(authRequest.getContrasenya())); // Codificar contraseña
+        usuari.setContrasenya(passwordEncoder.encode(authRequest.getContrasenya()));
         usuari.setRol(RolUsuari.USER);
 
         return usuariRepository.save(usuariMapper.toEntity(usuari))
                 .map(savedUser -> {
-                    // Generar token JWT incluyendo el userId, nombre de usuario y rol
                     String token = jwtUtil.generateToken(savedUser.getId(), savedUser.getNomUsuari(), savedUser.getRol().name());
                     UsuariDTO responseDTO = usuariMapper.toDto(savedUser);
                     return new AuthResponse(responseDTO, token);
@@ -41,12 +39,10 @@ public class AuthService {
                 .onErrorResume(e -> Mono.error(new Exception("Error registrant usuari: " + e.getMessage())));
     }
 
-    // Método para autenticar un usuario existente
     public Mono<AuthResponse> loginUser(AuthRequest authRequest) {
         return usuariRepository.findByNomUsuari(authRequest.getNomUsuari())
-                .filter(usuari -> passwordEncoder.matches(authRequest.getContrasenya(), usuari.getContrasenya())) // Verificar contraseña
+                .filter(usuari -> passwordEncoder.matches(authRequest.getContrasenya(), usuari.getContrasenya()))
                 .map(usuari -> {
-                    // Generar token JWT incluyendo el userId, nombre de usuario y rol
                     String token = jwtUtil.generateToken(usuari.getId(), usuari.getNomUsuari(), usuari.getRol().name());
                     UsuariDTO responseDTO = usuariMapper.toDto(usuari);
                     return new AuthResponse(responseDTO, token);

@@ -112,8 +112,8 @@ public class MascotaController {
                     return mascotaService.getMascotaById(mascotaId)
                             .filter(mascota -> mascota.getPropietariId().equals(authenticatedUserId))
                             .flatMap(mascota -> mascotaService.deleteMascota(mascotaId)
-                                    .then(Mono.just(ResponseEntity.noContent().<Void>build())))
-                            .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.FORBIDDEN).build()));
+                                    .then(Mono.just(new ResponseEntity<Void>(HttpStatus.NO_CONTENT))))
+                            .switchIfEmpty(Mono.just(new ResponseEntity<Void>(HttpStatus.FORBIDDEN)));
                 });
     }
 

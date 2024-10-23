@@ -2,7 +2,6 @@ package cat.itacademy.mascota_virtual_back.security;
 
 import cat.itacademy.mascota_virtual_back.exceptions.InvalidTokenException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -26,31 +25,33 @@ public class JwtAuthenticationFilter implements WebFilter {
     public Mono<Void> filter(@NonNull ServerWebExchange exchange, @NonNull WebFilterChain chain) {
 
         String token = extractJwtFromRequest(exchange);
-        if (token == null) {
-            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-            return exchange.getResponse().setComplete();
+        if (token != null) {
+            String username = jwtUtil.extractUsername(token);
+            String userId = jwtUtil.extractUserId(token);
+
+            if (username == null) {
+                return Mono.error(new InvalidTokenException("JWT token no vàlid: usuari no trobat"));
+            }
+
+            return userDetailsService.findByUsername(username)
+                    .flatMap(userDetails -> {
+                        if (jwtUtil.validateToken(token, userDetails)) {
+                            UsernamePasswordAuthenticationToken authToken =
+                                    new UsernamePasswordAuthenticationToken(
+                                            userDetails, null, userDetails.getAuthorities());
+                            authToken.setDetails(userId);
+                            return chain.filter(exchange)
+                                    .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authToken));
+                        } else {
+                            return Mono.error(new InvalidTokenException("JWT token no vàlid"));
+                        }
+                    })
+                    .onErrorResume(UsernameNotFoundException.class, e -> {
+                        return Mono.error(new UsernameNotFoundException("Usuari no trobat: " + username));
+                    });
         }
 
-        String username = jwtUtil.extractUsername(token);
-        String userId = jwtUtil.extractUserId(token);
-        if (username == null) {
-            return Mono.error(new InvalidTokenException("JWT token no vàlid: usuari no trobat"));
-        }
-
-        return userDetailsService.findByUsername(username)
-                .flatMap(userDetails -> {
-                    if (jwtUtil.validateToken(token, userDetails)) {
-                        UsernamePasswordAuthenticationToken authToken =
-                                new UsernamePasswordAuthenticationToken(
-                                        userDetails, null, userDetails.getAuthorities());
-                        authToken.setDetails(userId);
-                        return chain.filter(exchange)
-                                .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authToken));
-                    } else {
-                        return Mono.error(new InvalidTokenException("JWT token no vàlid"));
-                    }
-                })
-                .switchIfEmpty(Mono.error(new UsernameNotFoundException("Usuari no trobat: " + username)));
+        return chain.filter(exchange);
     }
 
     private String extractJwtFromRequest(ServerWebExchange exchange) {
@@ -61,5 +62,3 @@ public class JwtAuthenticationFilter implements WebFilter {
         return null;
     }
 }
-
-

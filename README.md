@@ -136,7 +136,7 @@ spring.data.mongodb.uri=mongodb://localhost:27017/mascota_virtual_db
 
 ## Llicència
 
-Aquest projecte està sota la llicència MIT.
+Aquest projecte està sota la llicència GNU General Public License (https://www.gnu.org/licenses/gpl-3.0.html).
 
 # Getting Started
 

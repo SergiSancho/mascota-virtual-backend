@@ -14,6 +14,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import reactor.core.publisher.Mono;
 
+import org.springframework.http.HttpMethod;
+import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
 @EnableWebFluxSecurity
@@ -24,8 +26,19 @@ public class SecurityConfig {
 
     @Bean
     public SecurityWebFilterChain jwtSecurityFilterChain(ServerHttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) {
-        return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
+        return http     //AL FINAL CONFIGURADA CORS AQUI
+                .cors(cors -> cors.configurationSource(request -> {
+                    CorsConfiguration config = new CorsConfiguration();
+                    config.addAllowedOrigin("http://localhost:3000");
+                    config.addAllowedMethod("*");
+                    config.addAllowedHeader("*");
+                    config.setAllowCredentials(true);
+                    config.setMaxAge(3600L);
+                    return config;
+                }))
+                .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
+                        .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Rutas de Swagger permitidas sin autenticación,CAMBIAR??
                         .pathMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
                         .pathMatchers("/api/auth/**").permitAll()

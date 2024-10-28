@@ -32,7 +32,7 @@ public class MascotaDTO {
     private int anim;
     private EstatMascota estat;
 
-    @NotNull(message = "El propietariId no pot ser nul")
+    //@NotNull(message = "El propietariId no pot ser nul")
     private String propietariId;
 
     private AccioMascota accio;

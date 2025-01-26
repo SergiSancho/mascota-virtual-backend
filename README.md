@@ -4,6 +4,8 @@
 
 Aquesta és l'API per gestionar mascotes virtuals, incloent crear, eliminar i actualitzar mascotes. Els usuaris poden registrar-se, iniciar sessió, i gestionar les seves pròpies mascotes. Els administradors poden gestionar totes les mascotes i usuaris del sistema.
 
+Aquest backend està dissenyat per conectar-se amb un frontend desenvolupat en TypeScript disponible al seguent repositori: [Repositori de Frontend per Mascotes Virtuals](https://github.com/SergiSancho/mascota-virtual-frontend).
+
 ## Enllaç Swagger
 
 Podeu accedir a la documentació de l'API a través del següent enllaç: [Swagger UI](http://localhost:8080/swagger-ui.html)
